@@ -1,0 +1,24 @@
+{
+  "name": "fm-collector",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "es6-promise": "^4.1.1",
+    "eventemitter3": "^2.0.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jackgit/fm-collector.git"
+  },
+  "author": "ygjack414@hotmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jackgit/fm-collector/issues"
+  },
+  "homepage": "https://github.com/jackgit/fm-collector#readme"
+}

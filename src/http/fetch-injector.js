@@ -1,5 +1,6 @@
 import EventEmitter from 'eventemitter3'
 import { isNative } from '../utils/lang'
+import { replace } from '../utils/wrap'
 
 const isFetchNative = isNative(window.fetch)
 
@@ -13,17 +14,16 @@ export default class FetchInterceptor extends EventEmitter {
 
   _wrapFetch () {
     const interceptor = this
-    const nativeFetch = window.fetch
 
-    window.fetch = function () {
-      const msg = Object.create ? Object.create(null) : {}
+    replace(window, 'fetch', function (origFetch) {
+      const msg = Object.create(null)
 
       msg.id = id++
       msg.URL = arguments[0]
       msg.method = arguments[1] ? arguments[1].method : 'GET'
 
       interceptor.emit('send', msg)
-      return nativeFetch.apply(window, arguments).then(r => {
+      return origFetch.apply(window, arguments).then(r => {
         interceptor.emit('success', msg)
         interceptor.emit('complete', msg)
         return r
@@ -32,7 +32,7 @@ export default class FetchInterceptor extends EventEmitter {
         interceptor.emit('complete', msg)
         throw e
       })
-    }
+    })
   }
 
   intercept () {

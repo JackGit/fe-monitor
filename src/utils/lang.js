@@ -1,3 +1,5 @@
+const objectPrototype = Object.prototype
+
 // Used to resolve the internal `[[Class]]` of values
 const toString = Object.prototype.toString
 
@@ -30,4 +32,25 @@ export function isNative (value) {
     // things like typed arrays as DOM methods which may not conform to the
     // normal native pattern.
     : (value && type == 'object' && reHostCtor.test(toString.call(value))) || false
+}
+
+export function isUndefined (value) {
+  return value === void 0
+}
+
+export function isFunction (value) {
+  return typeof value === 'function'
+}
+
+export function isString (value) {
+  return objectPrototype.toString.call(value) === '[object String]'
+}
+
+export function isEmptyObject (value) {
+  for (let _ in value) return false  // eslint-disable-line guard-for-in, no-unused-vars
+  return true
+}
+
+export function hasKey (obj, key) {
+  return objectPrototype.hasOwnProperty.call(obj, key)
 }

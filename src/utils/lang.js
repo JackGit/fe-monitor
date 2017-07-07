@@ -54,3 +54,27 @@ export function isEmptyObject (value) {
 export function hasKey (obj, key) {
   return objectPrototype.hasOwnProperty.call(obj, key)
 }
+
+/**
+ * to check an object is Error object or not
+ * For example:
+ *   isError(new TypeError()) === true
+ *   isError(new ErrorEvent()) === false
+ * @param  { Object }  obj [description]
+ * @return {Boolean}     [description]
+ */
+export function isError (obj) {
+  return Error.prototype.isPrototypeOf(obj)
+}
+
+/**
+ * to check an object is ErrorEvent object or not
+ * For example:
+ *   isErrorEvent(new TypeError()) === false
+ *   isErrorEvent(new ErrorEvent()) === true
+ * @param  { Object }  obj [description]
+ * @return {Boolean}     [description]
+ */
+export function isErrorEvent (obj) {
+  return ErrorEvent.prototype.isPrototypeOf(obj)
+}

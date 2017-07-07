@@ -69,13 +69,13 @@ export function wrap (func, before, after) {
   function wrapper () {
     before && before.apply(this, arguments)
     func.apply(this, arguments)
-    after && after.apply(this, arguments))
+    after && after.apply(this, arguments)
   }
 
   // copy over properties of the original function
   for (let prop in func) {
     if (hasKey(func, prop)) {
-      wrapped[prop] = func[prop]
+      wrapper[prop] = func[prop]
     }
   }
 

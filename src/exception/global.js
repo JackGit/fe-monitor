@@ -1,15 +1,4 @@
-import { wrapFunc, restore } from '../utils/wrap'
-
-const replacementTracker = []
-
-export function installGlobalErrorHandler () {
-  installNormalUncaughtErrorHandler()
-  installPromiseUncaughtErrorHandler()
-}
-
-export function uninstallGlobalErrorHandler () {
-  restore(replacementTracker)
-}
+import { wrapFunc } from '../utils/wrap'
 
 /**
  * use window onerror handler, as same as error even listener, to global catch uncaught errors
@@ -23,7 +12,7 @@ export function uninstallGlobalErrorHandler () {
  *   2. static resource loading error (it can be caught by capture phase of error event, but I'm intentially ignore this error)
  *   3. dynamic resource loading error
  */
-export function installNormalUncaughtErrorHandler () {
+export function installNormalUncaughtErrorHandler (replacementTracker) {
   wrapFunc(window, 'onerror', function (/* msg, url, lineNo, columnNo, error */) {
     processError()
   }, null, replacementTracker)
@@ -42,7 +31,7 @@ export function installNormalUncaughtErrorHandler () {
  *   throw new Error('you cannot catch it outside of promise')
  * })
  */
-export function installPromiseUncaughtErrorHandler () {
+export function installPromiseUncaughtErrorHandler (replacementTracker) {
   // some browser support unhandledrejection event, which is able to catch uncaught promise error
   if (window.onunhandledrejection) {
     wrapFunc(window, 'onunhandledrejection', function (event) {
@@ -55,8 +44,4 @@ export function installPromiseUncaughtErrorHandler () {
       })
     }, null, replacementTracker)
   }
-}
-
-function processError (error) {
-  console.log('processing error', error)
 }

@@ -60,7 +60,8 @@ export function hasKey (obj, key) {
  * For example:
  *   isError(new TypeError()) === true
  *   isError(new ErrorEvent()) === false
- * @param  { Object }  obj [description]
+ *   isError(new DOMException()) == true
+ * @param  {Object}  obj [description]
  * @return {Boolean}     [description]
  */
 export function isError (obj) {
@@ -72,9 +73,13 @@ export function isError (obj) {
  * For example:
  *   isErrorEvent(new TypeError()) === false
  *   isErrorEvent(new ErrorEvent()) === true
- * @param  { Object }  obj [description]
+ * @param  {Object}  obj [description]
  * @return {Boolean}     [description]
  */
 export function isErrorEvent (obj) {
   return ErrorEvent.prototype.isPrototypeOf(obj)
+}
+
+export function toArray (obj) {
+  return Array.prototype.slice.call(obj)
 }

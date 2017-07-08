@@ -68,8 +68,13 @@ export function wrap (func, before, after) {
 
   function wrapper () {
     before && before.apply(this, arguments)
-    func.apply(this, arguments)
-    after && after.apply(this, arguments)
+
+    if (after) {
+      func.apply(this, arguments)
+      return after.apply(this, arguments)
+    } else {
+      return func.apply(this, arguments)
+    }
   }
 
   // copy over properties of the original function

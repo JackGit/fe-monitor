@@ -1,76 +1,78 @@
-/**
- * ajax interceptor will intercept:
- *  1. xhr.open()
- *  2. xhr.send()
- *  3. xhr.onreadystatechange
- *  4. xhr.ontimeout
- *  5. xhr.onabort
- *  6. xhr.onerror
- *  7. xhr.onloadend
- *
- * dispatch events:
- *  1. onsend
- *  2. onerror
- *  3. oncomplete
- *  4. onsuccess
- */
 import EventEmitter from 'eventemitter3'
-import { wrapFunc } from '../utils/wrap'
+import { inject, restore } from '../../utils/function'
 
 const xhrPrototype = XMLHttpRequest.prototype
-const INTERCEPT_PROPERTY = '__fm_xhr'
+const INJECTOR_PROPERTY = '__fm_xhr__'
 
 // count of xhr request
 let id = 0
 
-export default class AjaxInterceptor extends EventEmitter {
+export default class AjaxInjector extends EventEmitter {
   constructor () {
     super()
+    this.tracker = []
+    this.type = 'ajax'
   }
 
-  intercept () {
-    this.interceptXhrOpen()
-    this.interceptXhrSend()
+  install () {
+    this.injectXhrOpen()
+    this.injectXhrSend()
   }
 
-  interceptXhrOpen () {
-    wrapFunc(xhrPrototype, 'open', function (method, url) {
+  uninstall () {
+    restore(this.tracker)
+  }
+
+  injectXhrOpen () {
+    inject(xhrPrototype, 'open', function (xhrOpen) {
+      return function (method, url) {
+        const xhr = this
+        const injectorData = Object.create(null)
+
+        // inject open arguments
+        injectorData.id = id++
+        injectorData.method = method
+        injectorData.url = url
+
+        xhr[INJECTOR_PROPERTY] = injectorData
+      }
+    }, this.tracker)
+  }
+
+  injectXhrSend () {
+    const injector = this
+    const tracker = this.tracker
+
+    inject(xhrPrototype, 'send', function () {
       const xhr = this
-      const interceptData = Object.create(null)
+      const data = xhr[INJECTOR_PROPERTY]
 
-      // intercept open arguments
-      interceptData.id = id++
-      interceptData.method = method
-      interceptData.url = url
+      data.sendAt = Date.now()
 
-      xhr[INTERCEPT_PROPERTY] = interceptData
-    })
-  }
-
-  interceptXhrSend () {
-    const interceptor = this
-
-    wrapFunc(xhrPrototype, 'send', function () {
-      const xhr = this
-      const msg = xhr[INTERCEPT_PROPERTY]
-
-      wrapFunc(xhr, 'onreadystatechange', function () {
-        if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
-          interceptor.emit('success', msg)
-        } else {
-          interceptor.emit('error', msg)
+      /* inject(xhr, 'onreadystatechange', function () {
+        if (xhr.readyState === 4) {
+          data.status = xhr.status
+          if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+            injector.emit('success', data)
+          } else {
+            injector.emit('error', data)
+          }
         }
-      })
+      }, tracker) */
 
-      wrapFunc(xhr, 'onloadend', function () {
-        interceptor.emit('complete', msg)
-      })
+      inject(xhr, 'onloadend', function () {
+        data.status = xhr.status
+        data.endAt = Date.now()
+        injector.emit('complete', data)
+      }, tracker)
 
       ['ontimeout', 'onerror', 'onabort'].forEach(prop => {
-        wrapFunc(xhr, prop, function () {
-          interceptor.emit('error', msg)
-        })
+        inject(xhr, prop, function () {
+          data.status = xhr.status
+          data.endAt = Date.now()
+          injector.emit('error', data)
+        }, tracker)
       })
-    })
+    }, tracker)
   }
 }

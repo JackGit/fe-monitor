@@ -1,25 +1,8 @@
-/**
- * for example, wrap xhr.send()
- *
- * replace(xhr, 'send', function (orig) {
- *   return wrap(orig, function () {
- *     console.log('before send')
- *   }, function () {
- *     console.log('after send')
- *   })
- * })
- */
+function hasKey (obj, key) {
+  return Object.prototype.hasOwnProperty.call(obj, key)
+}
 
-import { hasKey } from './lang'
-
-/**
- * replace a property of an object
- * @param  { Object } obj         [description]
- * @param  { String } prop        [description]
- * @param  { Function } replacement [description]
- * @param  { Array } track       [description]
- */
-export function replace (obj, prop, replacement, track) {
+function replace (obj, prop, replacement, track) {
   const orig = obj[prop]
   obj[prop] = replacement(orig)
   if (track) {
@@ -27,11 +10,7 @@ export function replace (obj, prop, replacement, track) {
   }
 }
 
-/**
- * revert operation of replace
- * @param  { Array } track [description]
- */
-export function restore (track) {
+function restore (track) {
   let builtin
 
   while (track.length) {
@@ -48,13 +27,7 @@ export function restore (track) {
   }
 }
 
-/**
- * wrap a function
- * @param  { Function } func   [description]
- * @param  { Function } before [description]
- * @param  { Function } after  [description]
- */
-export function wrap (func, before, after) {
+function wrap (func, before, after) {
   // if original function is already a wrapper function
   // don't want to wrap twice
   if (func.__fm_inner__) {
@@ -68,13 +41,8 @@ export function wrap (func, before, after) {
 
   function wrapper () {
     before && before.apply(this, arguments)
-
-    if (after) {
-      func.apply(this, arguments)
-      return after.apply(this, arguments)
-    } else {
-      return func.apply(this, arguments)
-    }
+    func.apply(this, arguments)
+    after && after.apply(this, arguments)
   }
 
   // copy over properties of the original function
@@ -91,7 +59,7 @@ export function wrap (func, before, after) {
   return wrapper
 }
 
-export function wrapFunc (obj, prop, before, after, track) {
+function wrapFunc (obj, prop, before, after, track) {
   replace(obj, prop, function (orig) {
     return wrap(orig, before, after)
   }, track)

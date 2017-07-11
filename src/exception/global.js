@@ -1,4 +1,21 @@
-import { wrapFunc } from '../utils/wrap'
+import TraceKit from 'tracekit'
+import { inject, restore } from '../utils/function'
+
+const tracker = []
+
+export function install (options) {
+  const opt = Object.assign({}, {
+    normal: true,
+    promise: true
+  }, options)
+
+  opt.normal && installNormalUncaughtErrorHandler()
+  opt.promise && installPromiseUncaughtErrorHandler()
+}
+
+export function uninstall () {
+  restore(tracker)
+}
 
 /**
  * use window onerror handler, as same as error even listener, to global catch uncaught errors
@@ -12,10 +29,22 @@ import { wrapFunc } from '../utils/wrap'
  *   2. static resource loading error (it can be caught by capture phase of error event, but I'm intentially ignore this error)
  *   3. dynamic resource loading error
  */
-export function installNormalUncaughtErrorHandler (replacementTracker) {
-  wrapFunc(window, 'onerror', function (/* msg, url, lineNo, columnNo, error */) {
-    processError()
-  }, null, replacementTracker)
+function installNormalUncaughtErrorHandler () {
+  inject(window, 'onerror', function (msg, url, lineNo, columnNo, error) {
+    if (!error) {
+      error = new Error(msg)
+      error.stack = [{
+        args: [],
+        column: columnNo,
+        line: lineNo,
+        url,
+        func: '?'
+      }]
+    }
+    TraceKit.report(error)
+
+    // cannot throw error outside, coz it will stop original onerror execution if there is one
+  }, tracker)
 }
 
 /**
@@ -31,17 +60,18 @@ export function installNormalUncaughtErrorHandler (replacementTracker) {
  *   throw new Error('you cannot catch it outside of promise')
  * })
  */
-export function installPromiseUncaughtErrorHandler (replacementTracker) {
+function installPromiseUncaughtErrorHandler () {
   // some browser support unhandledrejection event, which is able to catch uncaught promise error
-  if (window.onunhandledrejection) {
-    wrapFunc(window, 'onunhandledrejection', function (event) {
-      // if onunhandledrejection is browser native support, event would be instance of PromiseRejectionEvent, reason path is event.reason
-      // if onunhandledrejection is third party, like bluebird implementation, event would be CustomerEvent, reason path is event.detail.reason
-      // reason is { message, stack }
-      processError({
-        reason: event.reason ? event.reason : event.detail.reason,
-        type: event.type
-      })
-    }, null, replacementTracker)
-  }
+  inject(window, 'onunhandledrejection', function (event) {
+    // if onunhandledrejection is browser native support, event would be instance of PromiseRejectionEvent, reason path is event.reason
+    // if onunhandledrejection is third party, like bluebird implementation, event would be CustomerEvent, reason path is event.detail.reason
+    // reason is { message, stack }
+    const reason = event.reason ? event.reason : event.detail.reason
+    const error = new Error(reason.message)
+    error.name = 'PromiseError'
+    error.stack = reason.stack
+    TraceKit.report(error)
+
+    // cannot throw error outside, coz it will stop original onunhandledrejection execution if there is one
+  }, tracker)
 }

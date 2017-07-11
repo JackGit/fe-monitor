@@ -1,3 +1,4 @@
+
 FM.Exception.GlobalHandler.install()
 FM.Exception.TryCatchWrapper.install()
 FM.Exception.wrap(function () {})
@@ -7,6 +8,7 @@ FM.Inspector.Performance.install()
 FM.Inspector.HTTP.install()
 FM.Inspector.DOM.install()
 
+// report once after batch trace
 FM.Tracer.trace({
   type: 'exception',
   level: 'high',
@@ -45,3 +47,21 @@ FM.Tracer.trace({
   type: 'customized',
 
 }).report()
+
+// report once
+FM.Tracer.report({
+  type: 'pageview'
+})
+
+// fire a post request like
+var request = {
+  basic: {},
+  traces: [{
+    type: 'exception',
+    message: ''
+  }, {
+    type: 'pageview'
+  }, {
+    type: 'resource'
+  }]
+}

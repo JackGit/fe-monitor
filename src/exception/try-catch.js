@@ -1,10 +1,71 @@
-import { replace, wrap, wrapFunc } from '../utils/wrap'
+/**
+ * try-catch wrapper is trying to mannually handle error in try-catch block, instead of handle error in window.onload function
+ * error object in window.onload function may miss stack information in some browers
+ */
+import TraceKit from 'tracekit'
+import { replace, restore, copy } from '../utils/function'
 import { isFunction, toArray } from '../utils/lang'
 
-export function tryCatchTimerFunctions () {
-  ['setTimeout', 'setInterval'].forEach(name => {
+const tracker = []
 
-    replace(window, name, function (orig) {
+export function install (options) {
+  const opt = Object.assign({}, {
+    timerFunction: true,
+    rafFunction: true,
+    eventListener: true
+  }, options)
+
+  opt.timerFunction && tryCatchTimerFunction()
+  opt.rafFunction && tryCatchRaf()
+  opt.eventListener && tryCatchEventListener()
+}
+
+export function uninstall () {
+  restore(tracker)
+}
+
+/**
+ * wrap function with try catch block
+ * @param  {Function} func   the original function to be wrapped
+ * @return {Function}        wrapper function
+ */
+export function wrapWithTryCatch (func) {
+  if (!isFunction(func)) {
+    return
+  }
+
+  // if original function is already a wrapper function
+  // don't want to wrap twice
+  if (func.__fm_inner__) {
+    return func
+  }
+
+  // if original function has already been wrapped before, return the wrapper
+  if (func.__fm_wrapper__) {
+    return func.__fm_wrapper__
+  }
+
+  function tryCatchWrapper () {
+    try {
+      return func.apply(this, arguments)
+    } catch (e) {
+      TraceKit.report(e)
+      throw e // this error will be caught in window.onerror again
+    }
+  }
+
+  // copy over properties of the original function
+  copy(tryCatchWrapper, func)
+
+  tryCatchWrapper.__fm_inner__ = func
+  func.__fm_wrapper__ = tryCatchWrapper
+
+  return tryCatchWrapper
+}
+
+function tryCatchTimerFunction () {
+  ['setTimeout', 'setInterval'].forEach(timeFunc => {
+    replace(window, timeFunc, function (original) {
       return function timerWrapper () {
         const args = toArray(arguments)
         const func = args[0]
@@ -17,27 +78,27 @@ export function tryCatchTimerFunctions () {
         // IE < 9 doesn't support .call/.apply on setInterval/setTimeout, but it
         // also supports only two arguments and doesn't care what this is, so we
         // can just call the original function directly.
-        if (orig.apply) {
-          return orign.apply(this, args)
+        if (original.apply) {
+          return original.apply(this, args)
         } else {
-          return orign(args[0], args[1])
+          return original(args[0], args[1])
         }
       }
-    })
+    }, tracker)
   })
 }
 
-export function tryCatchRAF () {
+function tryCatchRaf () {
   if (window.requestAnimationFrame) {
-    replace(window, 'requestAnimationFrame', function (orig) {
-      return function RAFWrapper (callback) {
-        return orig(wrapWithTryCatch(callback))
+    replace(window, 'requestAnimationFrame', function (original) {
+      return function rafWrapper (callback) {
+        return original(wrapWithTryCatch(callback))
       }
-    })
+    }, tracker)
   }
 }
 
-export function tryCatchEventListener () {
+function tryCatchEventListener () {
   [
     'EventTarget', 'Window', 'Node', 'ApplicationCache', 'AudioTrackList', 'ChannelMergerNode',
     'CryptoOperation', 'EventSource', 'FileReader', 'HTMLUnknownElement', 'IDBDatabase', 'IDBRequest',
@@ -47,20 +108,22 @@ export function tryCatchEventListener () {
   ].forEach(eventTarget => {
     const prototype = window[eventTarget] && window[eventTarget].prototype
 
-    replace(prototype, 'addEventListener', function (original) {
-      return function addEventListenerWrapper () {
-        const args = toArray(arguments)
-        // args[1] =
-        return original.apply(this, args)
-      }
-    })
+    if (prototype) {
+      replace(prototype, 'addEventListener', function (original) {
+        return function addEventListenerWrapper () {
+          const args = toArray(arguments)
+          args[1] = wrapWithTryCatch(args[1])
+          return original.apply(this, args)
+        }
+      }, tracker)
 
-    replace(prototype, 'removeEventListener', function (original) {
-      return function removeEventListenerWrapper () {
-        const args = toArray(arguments)
-        // args[1] =
-        return original.apply(this, args)
-      }
-    })
+      replace(prototype, 'removeEventListener', function (original) {
+        return function removeEventListenerWrapper () {
+          const args = toArray(arguments)
+          args[1] = wrapWithTryCatch(args[1])
+          return original.apply(this, args)
+        }
+      }, tracker)
+    }
   })
 }

@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="../dist/fm.js"></script>
+  <script>
+  FM.Exception.GlobalHandler.install()
+  FM.Exception.TryCatchWrapper.install()
+  </script>
+  <title></title>
+</head>
+<body onclick="handleClick()">
+  <div>click me to generate error<div>
+  <script src="assets/js/syntax-error.js"></script>
+  <script src="assets/js/reference-error.js"></script>
+  <script src="assets/js/promise-error-1.js"></script>
+  <script src="assets/js/promise-error-2.js"></script>
+</body>
+</html>

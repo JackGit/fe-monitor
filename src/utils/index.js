@@ -1,5 +1,5 @@
 import { replace, inject, restore, copy } from './function'
-import BuildIn from './build-in'
+import * as BuildIn from './build-in'
 
 export default {
   replace,

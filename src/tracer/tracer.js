@@ -1,5 +1,5 @@
 import { toArray } from '../utils/lang'
-import BuildIn from '../utils/build-in'
+import { xhrPrototypeOpen, xhrPrototypeSend } from '../utils/build-in'
 
 export default class Tracer {
   constructor (options) {
@@ -50,7 +50,7 @@ export default class Tracer {
         url,
         request,
         response => console.log('Tracer.report() success', response),
-        (statusText, status) => console.log('Tracer.report() failed', statusText, status)
+        (statusText, status) => console.log(`Tracer.report() failed statusText=${statusText}, status=${status}`)
       )
     } else {
       post(url, request)
@@ -74,13 +74,13 @@ export default class Tracer {
    * @param  {Object} data
    */
   report (data) {
-    console.log('report', data)
     this._send(data)
   }
 }
 
 // need to make sure this post is not watched by AjaxInjector
 function post (url, data, onSuccess, onError) {
+  console.log('FM.Tracer.report data', data) // TODO temp code
   const xhr = new XMLHttpRequest()
   xhr.onreadystatechange = function () {
     if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
@@ -89,8 +89,8 @@ function post (url, data, onSuccess, onError) {
       onError && onError(xhr.statusText || null, xhr.status)
     }
   }
-  BuildIn.xhrPrototypeOpen.call(xhr, 'POST', url, true)
-  BuildIn.xhrPrototypeSend.call(xhr, data)
+  xhrPrototypeOpen.call(xhr, 'POST', url, true)
+  xhrPrototypeSend.call(xhr, data)
 }
 
 function resolution () {

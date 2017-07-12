@@ -1,9 +1,5 @@
-import BuildIn from '../utils/build-in'
+import { setTimeout, xhrPrototypeSend, xhrPrototypeOpen } from '../utils/build-in'
 import { isUndefined, hasKey } from '../utils/lang'
-
-const setTimeout = BuildIn.setTimeout
-const xhrPrototypeOpen = BuildIn.xhrPrototypeOpen
-const xhrPrototypeSend = BuildIn.xhrPrototypeSend
 
 const _has = hasKey
 const _isUndefined = isUndefined

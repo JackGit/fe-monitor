@@ -1,12 +1,10 @@
-import { addEventListener } from '../utils/event'
+import { addEventListener } from '../utils/build-in'
+import { hasPerformance } from '../utils/support'
 
 const VERY_BEGINNING = window.__fm_verybeginning__ || Date.now()
 const chromeLoadTimes = window.chrome && window.chrome.loadTimes
-const hasPerformanceTiming = window.performance && window.performance.timing
+const hasPerformanceTiming = hasPerformance()
 const performanceTiming = hasPerformanceTiming ? window.performance.timing : Object.create(null)
-const navigationTiming = Object.create(null)
-
-export default navigationTiming
 
 const TIMES = {
   DNS: ['domainLookupStart', 'domainLookupEnd'],
@@ -22,31 +20,47 @@ const TIMES = {
   total: ['navigationStart', 'loadEventEnd']
 }
 
-Object.keys(TIMES).forEach(prop => {
+export function getTiming () {
+  const navigationTiming = []
+  Object.keys(TIMES).forEach(prop => {
+    const start = performanceTiming[TIMES[prop][0]]
+    const end = performanceTiming[TIMES[prop][1]]
+    const t = end - start
+    navigationTiming.push({
+      name: prop,
+      duration: t > 0 ? t : 0,
+      start,
+      end
+    })
+  })
+  return navigationTiming
+}
+
+/* Object.keys(TIMES).forEach(prop => {
   Object.defineProperty(navigationTiming, prop, {
     get () {
       const t = performanceTiming[TIMES[prop][1]] - performanceTiming[TIMES[prop][0]]
       return t > 0 ? t : 0
     }
   })
-})
+}) */
 
 polyfill()
 
 function polyfill () {
   if (hasPerformanceTiming) {
-    addEventListener(window, 'DOMContentLoaded', _ => {
+    addEventListener('DOMContentLoaded', _ => {
       performanceTiming.firstPaint = firstPaint() || Date.now()
     })
   } else {
-    addEventListener(window, 'DOMContentLoaded', _ => {
+    addEventListener('DOMContentLoaded', _ => {
       const onDOMContentLoaded = Date.now()
       // treat these timing points as when DOMContentLoaded triggered
       ;['domContentLoadedEventStart', 'domContentLoadedEventEnd', 'loadEventStart', 'firstPaint'].forEach(prop =>
         performanceTiming[prop] = onDOMContentLoaded
       )
     })
-    addEventListener(window, 'load', _ => {
+    addEventListener('load', _ => {
       performanceTiming.loadEventEnd = Date.now()
     })
 

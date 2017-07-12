@@ -80,7 +80,6 @@ export default class Tracer {
 
 // need to make sure this post is not watched by AjaxInjector
 function post (url, data, onSuccess, onError) {
-  console.log('FM.Tracer.report data', data) // TODO temp code
   const xhr = new XMLHttpRequest()
   xhr.onreadystatechange = function () {
     if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {

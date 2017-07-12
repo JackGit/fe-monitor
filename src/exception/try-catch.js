@@ -2,13 +2,18 @@
  * try-catch wrapper is trying to mannually handle error in try-catch block, instead of handle error in window.onload function
  * error object in window.onload function may miss stack information in some browers
  */
-import TraceKit from 'tracekit'
+import { processException } from './processor'
 import { replace, restore, copy } from '../utils/function'
 import { isFunction, toArray } from '../utils/lang'
 
 const tracker = []
 
-export function install (options) {
+export default {
+  install,
+  uninstall
+}
+
+function install (options) {
   const opt = Object.assign({}, {
     timerFunction: true,
     rafFunction: true,
@@ -20,7 +25,7 @@ export function install (options) {
   opt.eventListener && tryCatchEventListener()
 }
 
-export function uninstall () {
+function uninstall () {
   restore(tracker)
 }
 
@@ -49,7 +54,7 @@ export function wrapWithTryCatch (func) {
     try {
       return func.apply(this, arguments)
     } catch (e) {
-      TraceKit.report(e)
+      processException(e)
       throw e // this error will be caught in window.onerror again
     }
   }

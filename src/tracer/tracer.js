@@ -1,9 +1,10 @@
 import { toArray } from '../utils/lang'
+import BuildIn from '../utils/build-in'
 
 export default class Tracer {
   constructor (options) {
     const defaultOptions = {
-      reportUrl: '',
+      reportUrl: 'xx',
       debug: false,
       maxCache: 100
     }
@@ -88,8 +89,8 @@ function post (url, data, onSuccess, onError) {
       onError && onError(xhr.statusText || null, xhr.status)
     }
   }
-  xhr.open('POST', url, true)
-  xhr.send(data)
+  BuildIn.xhrPrototypeOpen.call(xhr, 'POST', url, true)
+  BuildIn.xhrPrototypeSend.call(xhr, data)
 }
 
 function resolution () {

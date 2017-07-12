@@ -1,13 +1,18 @@
+import BuildIn from '../utils/build-in'
+import { isUndefined, hasKey } from '../utils/lang'
+
+const setTimeout = BuildIn.setTimeout
+const xhrPrototypeOpen = BuildIn.xhrPrototypeOpen
+const xhrPrototypeSend = BuildIn.xhrPrototypeSend
+
+const _has = hasKey
+const _isUndefined = isUndefined
+
 /**
  * https://github.com/csnover/TraceKit
  * @license MIT
  * @namespace TraceKit
  */
-(function(window, undefined) {
-if (!window) {
-    return;
-}
-
 var TraceKit = {};
 var _oldTraceKit = window.TraceKit;
 
@@ -17,29 +22,6 @@ var UNKNOWN_FUNCTION = '?';
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error#Error_types
 var ERROR_TYPES_RE = /^(?:[Uu]ncaught (?:exception: )?)?(?:((?:Eval|Internal|Range|Reference|Syntax|Type|URI|)Error): )?(.*)$/;
-
-/**
- * A better form of hasOwnProperty<br/>
- * Example: `_has(MainHostObject, property) === true/false`
- *
- * @param {Object} object to check property
- * @param {string} key to check
- * @return {Boolean} true if the object has the key and it is not inherited
- */
-function _has(object, key) {
-    return Object.prototype.hasOwnProperty.call(object, key);
-}
-
-/**
- * Returns true if the parameter is undefined<br/>
- * Example: `_isUndefined(val) === true/false`
- *
- * @param {*} what Value to check
- * @return {Boolean} true if undefined and false otherwise
- */
-function _isUndefined(what) {
-    return typeof what === 'undefined';
-}
 
 /**
  * Export TraceKit out to another variable<br/>
@@ -127,6 +109,7 @@ TraceKit.report = (function reportModuleWrapper() {
      * @memberof TraceKit.report
      */
     function subscribe(handler) {
+        installGlobalHandler();
         handlers.push(handler);
     }
 
@@ -140,6 +123,11 @@ TraceKit.report = (function reportModuleWrapper() {
             if (handlers[i] === handler) {
                 handlers.splice(i, 1);
             }
+        }
+
+        if (handlers.length === 0) {
+            window.onerror = _oldOnerrorHandler;
+            _onErrorHandlerInstalled = false;
         }
     }
 
@@ -171,6 +159,76 @@ TraceKit.report = (function reportModuleWrapper() {
         }
     }
 
+    var _oldOnerrorHandler, _onErrorHandlerInstalled;
+
+    /**
+     * Ensures all global unhandled exceptions are recorded.
+     * Supported by Gecko and IE.
+     * @param {string} message Error message.
+     * @param {string} url URL of script that generated the exception.
+     * @param {(number|string)} lineNo The line number at which the error occurred.
+     * @param {(number|string)=} columnNo The column number at which the error occurred.
+     * @param {Error=} errorObj The actual Error object.
+     * @memberof TraceKit.report
+     */
+    function traceKitWindowOnError(message, url, lineNo, columnNo, errorObj) {
+        var stack = null;
+
+        if (lastExceptionStack) {
+            TraceKit.computeStackTrace.augmentStackTraceWithInitialElement(lastExceptionStack, url, lineNo, message);
+    	    processLastException();
+        } else if (errorObj) {
+            stack = TraceKit.computeStackTrace(errorObj);
+            notifyHandlers(stack, true, errorObj);
+        } else {
+            var location = {
+              'url': url,
+              'line': lineNo,
+              'column': columnNo
+            };
+
+            var name;
+            var msg = message; // must be new var or will modify original `arguments`
+            if ({}.toString.call(message) === '[object String]') {
+                var groups = message.match(ERROR_TYPES_RE);
+                if (groups) {
+                    name = groups[1];
+                    msg = groups[2];
+                }
+            }
+
+            location.func = TraceKit.computeStackTrace.guessFunctionName(location.url, location.line);
+            location.context = TraceKit.computeStackTrace.gatherContext(location.url, location.line);
+            stack = {
+                'name': name,
+                'message': msg,
+                'mode': 'onerror',
+                'stack': [location]
+            };
+
+            notifyHandlers(stack, true, null);
+        }
+
+        if (_oldOnerrorHandler) {
+            return _oldOnerrorHandler.apply(this, arguments);
+        }
+
+        return false;
+    }
+
+    /**
+     * Install a global onerror handler
+     * @memberof TraceKit.report
+     */
+    function installGlobalHandler() {
+        if (_onErrorHandlerInstalled === true) {
+            return;
+        }
+
+        _oldOnerrorHandler = window.onerror;
+        window.onerror = traceKitWindowOnError;
+        _onErrorHandlerInstalled = true;
+    }
 
     /**
      * Process the most recent exception
@@ -332,8 +390,10 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
             };
 
             var request = getXHR();
-            request.open('GET', url, false);
-            request.send('');
+
+            // invoke buildin xhr functions
+            xhrPrototypeOpen.call(request, 'GET', url, false)
+            xhrPrototypeSend.call(request, '')
             return request.responseText;
         } catch (e) {
             return '';
@@ -1147,36 +1207,6 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
     return computeStackTrace;
 }());
 
-/**
- * Extends support for global error handling for asynchronous browser
- * functions. Adopted from Closure Library's errorhandler.js
- * @memberof TraceKit
- */
-TraceKit.extendToAsynchronousCallbacks = function () {
-    var _helper = function _helper(fnName) {
-        var originalFn = window[fnName];
-        window[fnName] = function traceKitAsyncExtension() {
-            // Make a copy of the arguments
-            var args = _slice.call(arguments);
-            var originalCallback = args[0];
-            if (typeof (originalCallback) === 'function') {
-                args[0] = TraceKit.wrap(originalCallback);
-            }
-            // IE < 9 doesn't support .call/.apply on setInterval/setTimeout, but it
-            // also only supports 2 argument and doesn't care what "this" is, so we
-            // can just call the original function directly.
-            if (originalFn.apply) {
-                return originalFn.apply(this, args);
-            } else {
-                return originalFn(args[0], args[1]);
-            }
-        };
-    };
-
-    _helper('setTimeout');
-    _helper('setInterval');
-};
-
 //Default options:
 if (!TraceKit.remoteFetching) {
     TraceKit.remoteFetching = true;
@@ -1189,13 +1219,4 @@ if (!TraceKit.linesOfContext || TraceKit.linesOfContext < 1) {
     TraceKit.linesOfContext = 11;
 }
 
-// UMD export
-if (typeof define === 'function' && define.amd) {
-    define('TraceKit', [], TraceKit);
-} else if (typeof module !== 'undefined' && module.exports && window.module !== module) {
-    module.exports = TraceKit;
-} else {
-    window.TraceKit = TraceKit;
-}
-
-}(typeof window !== 'undefined' ? window : global));
+export default TraceKit

@@ -1,12 +1,17 @@
 <!doctype html>
 <html>
 <head>
+  <script>window.__fm_verybeginning__ = Date.now()</script>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <script src="../dist/fm.js"></script>
   <script>
   FM.Exception.GlobalHandler.install()
   FM.Exception.TryCatchWrapper.install()
+  FM.Inspector.install()
+  window.onload = function () {
+    console.log('loaded', FM.Performance.navigationTiming)
+  }
   </script>
   <title></title>
 </head>

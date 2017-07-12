@@ -1,6 +1,6 @@
 import EventEmitter from 'eventemitter3'
-import { isNative } from '../../utils/lang'
-import { replace, restore } from '../../utils/function'
+import { isNative } from '../utils/lang'
+import { replace, restore } from '../utils/function'
 
 const isFetchNative = isNative(window.fetch)
 

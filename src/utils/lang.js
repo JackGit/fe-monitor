@@ -35,6 +35,7 @@ export function isNative (value) {
 }
 
 export function isUndefined (value) {
+  // return typeof value === 'undefined'
   return value === void 0
 }
 

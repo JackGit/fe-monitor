@@ -1,9 +1,14 @@
-import TraceKit from 'tracekit'
 import { inject, restore } from '../utils/function'
+import { processException } from './processor'
 
 const tracker = []
 
-export function install (options) {
+export default {
+  install,
+  uninstall
+}
+
+function install (options) {
   const opt = Object.assign({}, {
     normal: true,
     promise: true
@@ -13,7 +18,7 @@ export function install (options) {
   opt.promise && installPromiseUncaughtErrorHandler()
 }
 
-export function uninstall () {
+function uninstall () {
   restore(tracker)
 }
 
@@ -41,7 +46,7 @@ function installNormalUncaughtErrorHandler () {
         func: '?'
       }]
     }
-    TraceKit.report(error)
+    processException(error)
 
     // cannot throw error outside, coz it will stop original onerror execution if there is one
   }, tracker)
@@ -70,7 +75,7 @@ function installPromiseUncaughtErrorHandler () {
     const error = new Error(reason.message)
     error.name = 'PromiseError'
     error.stack = reason.stack
-    TraceKit.report(error)
+    processException(error)
 
     // cannot throw error outside, coz it will stop original onunhandledrejection execution if there is one
   }, tracker)

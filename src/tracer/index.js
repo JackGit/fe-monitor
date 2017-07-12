@@ -1,11 +1,15 @@
 import Tracer from './tracer'
-
 const tracer = new Tracer()
 
-export function trace () {
+export default {
+  trace,
+  report
+}
+
+function trace () {
   return tracer.trace.apply(tracer, arguments)
 }
 
-export function report () {
+function report () {
   return tracer.report.apply(tracer, arguments)
 }

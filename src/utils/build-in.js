@@ -1,9 +1,8 @@
-const buildIns = Object.create(null)
-
-export function saveBuildIn (key, obj, prop, body) {
-  buildIns[key] = [obj, prop, body]
-}
-
-export function getBuildIn (key) {
-  return buildIns[key]
+export default {
+  setTimeout: window.setTimeout,
+  setInterval: window.setInterval,
+  requestAnimationFrame: window.requestAnimationFrame,
+  fetch: window.fetch,
+  xhrPrototypeOpen: XMLHttpRequest.prototype.open,
+  xhrPrototypeSend: XMLHttpRequest.prototype.send
 }

@@ -15,10 +15,10 @@ addEventListener('load', _ => {
   Performance.navigationTiming = getNavigationTiming()
 
   Tracer.trace({
-    type: 'navigation',
-    timing: Performance.navigationTiming
-  }).trace({
-    type: 'resource',
-    timing: Performance.resourceTiming
+    type: 'pv',
+    timing: {
+      navigation: Performance.navigationTiming,
+      resource: Performance.resourceTiming
+    }
   }).report()
 })

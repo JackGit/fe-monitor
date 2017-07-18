@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "es6-promise": "^4.1.1",
     "eventemitter3": "^2.0.3",
+    "js-cookie": "^2.1.4",
     "tracekit": "^0.4.5"
   },
   "devDependencies": {

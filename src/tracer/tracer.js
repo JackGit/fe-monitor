@@ -4,7 +4,7 @@ import { xhrPrototypeOpen, xhrPrototypeSend } from '../utils/build-in'
 export default class Tracer {
   constructor (options) {
     const defaultOptions = {
-      reportUrl: 'http://192.168.1.103:3000/trace',
+      reportUrl: 'http://localhost:3000/trace',
       debug: false,
       maxCache: 100
     }
@@ -21,7 +21,7 @@ export default class Tracer {
 
     request.basic = {
       pageUrl: pageUrl(),
-      fullPageUrl: fullPageUrl(),
+      fullUrl: fullUrl(),
       userAgent: userAgent(),
       resolution: resolution()
     }
@@ -89,7 +89,8 @@ function post (url, data, onSuccess, onError) {
     }
   }
   xhrPrototypeOpen.call(xhr, 'POST', url, true)
-  xhrPrototypeSend.call(xhr, data)
+  xhr.setRequestHeader('Content-Type', 'application/json')
+  xhrPrototypeSend.call(xhr, JSON.stringify(data))
 }
 
 function resolution () {
@@ -100,7 +101,7 @@ function userAgent () {
   return navigator.userAgent
 }
 
-function fullPageUrl () {
+function fullUrl () {
   return window.location.href
 }
 

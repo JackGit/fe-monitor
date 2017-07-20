@@ -2147,7 +2147,7 @@ var Tracer = function () {
     __WEBPACK_IMPORTED_MODULE_2_babel_runtime_helpers_classCallCheck___default()(this, Tracer);
 
     var defaultOptions = {
-      reportUrl: 'http://localhost:3000/trace',
+      reportUrl: 'http://yotta-tech.cn:4141/trace',
       debug: false,
       maxCache: 100
     };

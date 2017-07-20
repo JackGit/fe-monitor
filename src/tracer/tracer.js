@@ -4,7 +4,7 @@ import { xhrPrototypeOpen, xhrPrototypeSend } from '../utils/build-in'
 export default class Tracer {
   constructor (options) {
     const defaultOptions = {
-      reportUrl: 'http://localhost:3000/trace',
+      reportUrl: 'http://yotta-tech.cn:4141/trace',
       debug: false,
       maxCache: 100
     }

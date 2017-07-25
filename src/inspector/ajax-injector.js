@@ -24,6 +24,9 @@ export default class AjaxInjector extends EventEmitter {
   }
 
   injectXhrOpen () {
+    const injector = this
+    const tracker = this.tracker
+
     inject(xhrPrototype, 'open', function (method, url) {
       const xhr = this
       const injectorData = Object.create(null)
@@ -33,40 +36,36 @@ export default class AjaxInjector extends EventEmitter {
       injectorData.method = method
       injectorData.url = url
 
-      xhr[INJECTOR_PROPERTY] = injectorData
-    }, this.tracker)
-  }
-
-  injectXhrSend () {
-    const injector = this
-    const tracker = this.tracker
-    let injected = false
-
-    inject(xhrPrototype, 'send', function () {
-      const xhr = this
-      const data = xhr[INJECTOR_PROPERTY]
-
-      data.sendAt = Date.now()
-
-      // need to avoid repeat injection when repeat call send() method
-      // it will coz duplicated emitted event
-      if (!injected) {
+      // prevent below case would repeat triggering event emits
+      // xhr.open()
+      // xhr.send() // emit event once
+      // xhr.open()
+      // xhr.send() // emit event twice
+      if (!xhr[INJECTOR_PROPERTY]) {
         inject(xhr, 'onloadend', function () {
-          data.status = xhr.status
-          data.endAt = Date.now()
-          injector.emit('complete', data)
+          xhr[INJECTOR_PROPERTY].status = xhr.status
+          xhr[INJECTOR_PROPERTY].endAt = Date.now()
+          injector.emit('complete', xhr[INJECTOR_PROPERTY])
         }, tracker)
 
         ;['ontimeout', 'onerror', 'onabort'].forEach(prop => {
           inject(xhr, prop, function () {
-            data.status = xhr.status
-            data.endAt = Date.now()
-            injector.emit('error', data)
+            xhr[INJECTOR_PROPERTY].status = xhr.status
+            xhr[INJECTOR_PROPERTY].endAt = Date.now()
+            injector.emit('error', xhr[INJECTOR_PROPERTY])
           }, tracker)
         })
-
-        injected = true
       }
+
+      xhr[INJECTOR_PROPERTY] = injectorData
+    }, tracker)
+  }
+
+  injectXhrSend () {
+    const tracker = this.tracker
+
+    inject(xhrPrototype, 'send', function () {
+      this[INJECTOR_PROPERTY].sendAt = Date.now()
     }, tracker)
   }
 }

@@ -8,9 +8,9 @@ export function getTiming () {
       .map(entry => ({
         name: entry.name,
         size: entry.encodedBodySize,
-        duration: entry.duration,
-        start: entry.fetchStart,
-        end: entry.responseEnd
+        duration: entry.duration
+        // start: entry.fetchStart,
+        // end: entry.responseEnd
       }))
   } else {
     return []

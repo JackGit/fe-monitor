@@ -6,9 +6,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <script src="../dist/fm.js"></script>
   <script>
-  FM.Exception.GlobalHandler.install()
-  FM.Exception.TryCatchWrapper.install()
-  FM.Inspector.install()
+  FM.init({
+    projectId: '123',
+    reportUrl: 'http://localhost:4141/trace'
+  })
   window.onload = function () {
     console.log('loaded')
   }

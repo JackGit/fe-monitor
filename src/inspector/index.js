@@ -1,6 +1,7 @@
 import Tracer from '../tracer'
 import AjaxInjector from './ajax-injector'
 import FetchInjector from './fetch-injector'
+import config from '../config'
 
 let installed = false
 let ajaxInjector = null
@@ -17,18 +18,13 @@ function install (options) {
     return
   }
 
-  const opt = Object.assign({}, {
-    ajax: true,
-    fetch: true
-  }, options)
-
-  if (opt.ajax) {
+  if (config().enableAjaxInspector) {
     ajaxInjector = new AjaxInjector()
     ajaxInjector.install()
     addEventListener(ajaxInjector)
   }
 
-  if (opt.fetch) {
+  if (config().enableFetchInspector) {
     fetchInjector = new FetchInjector()
     fetchInjector.install()
     addEventListener(fetchInjector)

@@ -4,7 +4,8 @@ import { xhrPrototypeOpen, xhrPrototypeSend } from '../utils/build-in'
 export default class Tracer {
   constructor (options) {
     const defaultOptions = {
-      reportUrl: 'http://yotta-tech.cn:4141/trace',
+      reportUrl: '',
+      projectId: '',
       debug: false,
       maxCache: 100
     }
@@ -15,15 +16,14 @@ export default class Tracer {
 
   _generateRequest (data) {
     const request = {
-      basic: null,
+      basic: {
+        projectId: this.options.projectId,
+        pageUrl: pageUrl(),
+        fullUrl: fullUrl(),
+        userAgent: userAgent(),
+        resolution: resolution()
+      },
       traces: []
-    }
-
-    request.basic = {
-      pageUrl: pageUrl(),
-      fullUrl: fullUrl(),
-      userAgent: userAgent(),
-      resolution: resolution()
     }
 
     if (data) {

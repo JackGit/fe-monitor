@@ -3,30 +3,43 @@ import Tracer from '../tracer'
 import { getTiming as getNavigationTiming } from './navigation'
 import { getTiming as getResourceTiming } from './resource'
 import { addEventListener } from '../utils/build-in'
+import config from '../config'
 
-const Performance = {
-  navigationTiming: [],
-  resourceTiming: []
+let installed = false
+
+export default {
+  install
 }
 
-export default Performance
+function install () {
+  if (installed) {
+    return
+  }
 
-addEventListener('load', _ => {
-  Performance.resourceTiming = getResourceTiming()
-  Performance.navigationTiming = getNavigationTiming()
+  addEventListener('load', _ => {
+    if (config().enableResourceTiming) {
+      traceResource()
+    }
 
-  tracePV() // PV will report everytime the page loads  
-  traceUV() // UV only report once cookies expires after a day
-  Tracer.report()
-})
+    tracePV() // PV will report everytime the page loads
+    traceUV() // UV only report once cookies expires after a day
+    Tracer.report()
+  })
+
+  installed = true
+}
+
+function traceResource () {
+  Tracer.trace({
+    type: 'resource',
+    timing: getResourceTiming()
+  })
+}
 
 function tracePV () {
   Tracer.trace({
     type: 'pv',
-    timing: {
-      navigation: Performance.navigationTiming,
-      resource: Performance.resourceTiming
-    }
+    timing: config().enableNavigationTiming ? getNavigationTiming() : []
   })
 }
 

@@ -34,7 +34,7 @@ export default class AjaxInjector extends EventEmitter {
       // inject open arguments
       injectorData.id = id++
       injectorData.method = method
-      injectorData.url = url
+      injectorData.url = url.split('?')[0]
 
       // prevent below case would repeat triggering event emits
       // xhr.open()

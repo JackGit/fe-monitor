@@ -23,7 +23,7 @@ export default class FetchInjector extends EventEmitter {
         const data = Object.create(null)
 
         data.id = id++
-        data.url = arguments[0]
+        data.url = arguments[0].split('?')[0]
         data.method = arguments[1] ? arguments[1].method : 'GET'
         data.sendAt = Date.now()
 

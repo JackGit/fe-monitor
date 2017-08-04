@@ -9,7 +9,7 @@ module.exports = {
   entry: './src/fm.js',
   output: {
     path: resolve('dist'),
-    filename: 'fm.js',
+    filename: 'fm.min.js',
     library: 'FM',
     libraryTarget: 'umd'
   },

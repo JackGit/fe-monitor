@@ -1,6 +1,6 @@
 const config = {
-  reportUrl: 'http://yotta-tech.cn:4141/trace',
-  projectId: 'dummy-project-id',
+  reportUrl: 'http://fm.jackyang.me/trace',
+  projectId: '',
   enableGlobalExceptionHandler: true,
   enableTryCatchWrapper: true,
   enableNavigationTiming: true,

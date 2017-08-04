@@ -36,15 +36,6 @@ export function getTiming () {
   return navigationTiming
 }
 
-/* Object.keys(TIMES).forEach(prop => {
-  Object.defineProperty(navigationTiming, prop, {
-    get () {
-      const t = performanceTiming[TIMES[prop][1]] - performanceTiming[TIMES[prop][0]]
-      return t > 0 ? t : 0
-    }
-  })
-}) */
-
 polyfill()
 
 function polyfill () {

@@ -21,9 +21,12 @@ function install () {
       traceResource()
     }
 
-    tracePV() // PV will report everytime the page loads
-    traceUV() // UV only report once cookies expires after a day
-    Tracer.report()
+    // need to put it inside a timemout, otherwise timing.loadEventEnd would return 0
+    setTimeout(function () {
+      tracePV() // PV will report everytime the page loads
+      traceUV() // UV only report once cookies expires after a day
+      Tracer.report()
+    }, 0)
   })
 
   installed = true

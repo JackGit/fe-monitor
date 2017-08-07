@@ -54,8 +54,8 @@ export function wrapWithTryCatch (func) {
     try {
       return func.apply(this, arguments)
     } catch (e) {
-      processException(e)
-      throw e // this error will be caught in window.onerror again
+      e.__fm_ignore__ = true // let window.onerror ignore this exception
+      processException(e, true) // need to rethrow the error after report, but this error needs to be ignored by window.onerror to prevent duplicate handling
     }
   }
 

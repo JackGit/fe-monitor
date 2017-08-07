@@ -36,6 +36,11 @@ function uninstall () {
  */
 function installNormalUncaughtErrorHandler () {
   inject(window, 'onerror', function (msg, url, lineNo, columnNo, error) {
+    // skip ignored exception, which is throw by tryCatchWrapper
+    if (error.__fm_ignore__) {
+      return
+    }
+
     if (!error) {
       error = new Error(msg)
       error.stack = [{
@@ -46,9 +51,8 @@ function installNormalUncaughtErrorHandler () {
         func: '?'
       }]
     }
-    processException(error)
 
-    // cannot throw error outside, coz it will stop original onerror execution if there is one
+    processException(error, false)
   }, tracker)
 }
 
@@ -75,8 +79,7 @@ function installPromiseUncaughtErrorHandler () {
     const error = new Error(reason.message)
     error.name = 'PromiseError'
     error.stack = reason.stack
-    processException(error)
 
-    // cannot throw error outside, coz it will stop original onunhandledrejection execution if there is one
+    processException(error, false)
   }, tracker)
 }

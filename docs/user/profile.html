@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+  <title>User Profile</title>
+  <script src="../../dist/fm.min.js" crossorigin="anonymous"></script>
+  <script>
+  FM.init({ projectId: '5988486e9a85353d3ce540be' })
+  </script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="../assets/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="../assets/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+</head>
+<body>
+
+  <nav class="light-blue lighten-1" role="navigation">
+    <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">User Profile</a>
+      <ul class="right hide-on-med-and-down">
+        <li><a href="../home.html">Home</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="row">
+    <form class="col s12">
+      <div class="row">
+        <div class="input-field col s6">
+          <i class="material-icons prefix">account_circle</i>
+          <input id="icon_prefix" type="text" class="validate">
+          <label for="icon_prefix">First Name</label>
+        </div>
+        <div class="input-field col s6">
+          <i class="material-icons prefix">phone</i>
+          <input id="icon_telephone" type="tel" class="validate">
+          <label for="icon_telephone">Telephone</label>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!--  Scripts-->
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="../assets/js/materialize.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/profile.js"></script>
+
+  </body>
+</html>

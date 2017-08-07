@@ -10,8 +10,8 @@ TraceKit.report.subscribe(function tracekitLogger (e) {
   Tracer.report({
     type: 'exception',
     name: e.name || 'Error',
-    message: e.message,
-    stack: e.stack
+    message: e.message || '',
+    stack: e.stack || []
   })
 })
 

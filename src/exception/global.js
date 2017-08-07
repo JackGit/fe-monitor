@@ -36,9 +36,17 @@ function uninstall () {
  */
 function installNormalUncaughtErrorHandler () {
   inject(window, 'onerror', function (msg, url, lineNo, columnNo, error) {
+
     // skip ignored exception, which is throw by tryCatchWrapper
     if (error.__fm_ignore__) {
       return
+    }
+
+    // special handling for syntax error
+    // syntaxError.stack would have no file, col and col information
+    // make one, so this can be parsed as other exceptions
+    if (error instanceof SyntaxError) {
+      error.stack = `${error.stack}\n at (${url}:${lineNo}:${columnNo})`
     }
 
     if (!error) {

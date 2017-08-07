@@ -171,7 +171,7 @@ TraceKit.report = (function reportModuleWrapper() {
         var stack = null;
 
         if (lastExceptionStack) {
-            TraceKit.computeStackTrace.augmentStackTraceWithInitialElement(lastExceptionStack, url, lineNo, message);
+          TraceKit.computeStackTrace.augmentStackTraceWithInitialElement(lastExceptionStack, url, lineNo, message);
     	    processLastException();
         } else if (errorObj) {
             stack = TraceKit.computeStackTrace(errorObj);
@@ -1011,7 +1011,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                 initial.column = findSourceInLine(reference[1], initial.url, initial.line);
             }
 
-            if (stackInfo.stack.length > 0) {
+            if (stackInfo.stack && stackInfo.stack.length > 0) {
                 if (stackInfo.stack[0].url === initial.url) {
                     if (stackInfo.stack[0].line === initial.line) {
                         return false; // already in stack trace
@@ -1023,7 +1023,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
                 }
             }
 
-            stackInfo.stack.unshift(initial);
+            stackInfo.stack && stackInfo.stack.unshift(initial);
             stackInfo.partial = true;
             return true;
         } else {

@@ -38,7 +38,7 @@ function installNormalUncaughtErrorHandler () {
   inject(window, 'onerror', function (msg, url, lineNo, columnNo, error) {
 
     // skip ignored exception, which is throw by tryCatchWrapper
-    if (error.__fm_ignore__) {
+    if (error && error.__fm_ignore__) {
       return
     }
 

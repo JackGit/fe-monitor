@@ -68,7 +68,7 @@ function polyfill () {
 function firstPaint () {
   if (chromeLoadTimes) {
     const times = chromeLoadTimes()
-    return times.firstPaintTime
+    return times.firstPaintTime * 1000
   } else if (performanceTiming && performanceTiming.msFirstPaint) {
     return performanceTiming.msFirstPaint
   } else {
